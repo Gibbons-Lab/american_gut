@@ -1,7 +1,5 @@
 """Module containing helper functions for the analyses."""
 
-import matplotlib.pyplot as plt
-
 
 def filled_bar(df, rank="Phylum", figsize=(16, 6), drop=0.01):
     """Plot a filled bar chart for the taxa composition of each individual.
