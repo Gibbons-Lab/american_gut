@@ -23,10 +23,7 @@ def find_closest(bacteroidetes, firmicutes, samples, n=1):
         The id of the n closest individuals.
 
     """
-    dists = samples.apply(lambda df: (df["Bacteroidetes"] - bacteroidetes)**2 +
-                                     (df["Firmicutes"] - firmicutes)**2,
-                          axis=1)
-    return dists.sort_values()[0:n]
+    pass
 
 
 # We start by reading our genus level data
