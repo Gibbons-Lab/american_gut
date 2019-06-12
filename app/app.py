@@ -80,42 +80,42 @@ app.layout = html.Div(style={"max-width": "1000px", "margin": 0,
               "max-width": "90%"}),
     html.Br(),
     html.Div([
-    daq.Slider(
-        id="bac_slider",
-        min=0,
-        max=100,
-        step=1,
-        value=40,
-        size=360,
-        color="red",
-        handleLabel={"showCurrentValue": True, "label": "Bacteroidetes"}
-    ),
-    html.Br(),
-    daq.Slider(
-        id="firm_slider",
-        min=0,
-        max=100,
-        step=1,
-        value=20,
-        size=360,
-        color="blue",
-        handleLabel={"showCurrentValue": True, "label": "Firmicutes"}
-    )], style={"display": "flex", "justify-content": "space-around",
-               "flex-wrap": "wrap"}),
+        daq.Slider(
+            id="bac_slider",
+            min=0,
+            max=100,
+            step=1,
+            value=40,
+            size=360,
+            color="red",
+            handleLabel={"showCurrentValue": True, "label": "Bacteroidetes"}
+        ),
+        daq.Slider(
+            id="firm_slider",
+            min=0,
+            max=100,
+            step=1,
+            value=20,
+            size=360,
+            color="blue",
+            handleLabel={"showCurrentValue": True, "label": "Firmicutes"}
+        )], style={"display": "flex", "justify-content": "space-around",
+                "flex-wrap": "wrap"}),
     dcc.Graph(
         id="phyla_graph",
         figure=beta_figure(close),
         style={"height": "70vh", "margin": 0, "padding": 0}
     ),
-    html.Div(["point size",
-    dcc.Slider(
-        id="size_slider",
-        min=2,
-        max=30,
-        step=1,
-        value=16,
-        marks={str(i): str(i) for i in ([2] + list(range(5, 31, 5)))}
-    )], style={"margin": "0 4em"})
+    html.Div([
+        "point size",
+        dcc.Slider(
+            id="size_slider",
+            min=2,
+            max=30,
+            step=1,
+            value=16,
+            marks={str(i): str(i) for i in ([2] + list(range(5, 31, 5)))}
+        )], style={"margin": "0 5vw"})
 ])
 
 
@@ -140,7 +140,8 @@ def update_bac(firm, bac):
 def update_figure(firm, bac, s):
     best = find_closest(bac/100, firm/100, samples, n=5)
     close[:] = 0
-    close[best.index] = 1
+    if best is not None:
+        close[best] = 1
     return beta_figure(close, s)
 
 

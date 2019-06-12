@@ -23,7 +23,7 @@ def find_closest(bacteroidetes, firmicutes, samples, n=1):
         The id of the n closest individuals.
 
     """
-    pass
+    return None
 
 
 # We start by reading our genus level data
