@@ -2,6 +2,7 @@
 
 import logging
 import pickle
+from os import path
 import pandas as pd
 from skbio.diversity import beta_diversity
 from skbio.stats.ordination import pcoa
@@ -28,22 +29,35 @@ def rarefy_counts(counts, depth=10000):
         a depth of `depth` (sum of variables equals depth).
 
     """
-    log.info("Subsampling %dx%d count matrix to a depth of %d." %
-             (counts.shape[0], counts.shape[1], depth))
+    log.info(
+        "Subsampling %dx%d count matrix to a depth of %d."
+        % (counts.shape[0], counts.shape[1], depth)
+    )
     bad = counts.astype("int").sum(1) < depth
     log.info("Removing %d samples due to low depth." % bad.sum())
-    rare = counts[~bad].apply(lambda x: pd.Series(
-        subsample_counts(x.astype("int"), depth), index=counts.columns),
-        axis=1)
+    rare = counts[~bad].apply(
+        lambda x: pd.Series(
+            subsample_counts(x.astype("int"), depth), index=counts.columns
+        ),
+        axis=1,
+    )
     return rare
 
 
 log.info("Reading genus-level data.")
-genera = pd.read_csv("../data/american_gut_genus.csv", dtype={"id": str})
+genera = pd.read_csv(
+    path.join("..", "data", "american_gut_genus.csv"), dtype={"id": str}
+)
 libsize = genera.groupby("id")["count"].sum()
 
-mat = pd.pivot_table(genera, columns="Genus", index="id",
-                     values="count", fill_value=0, aggfunc="sum")
+mat = pd.pivot_table(
+    genera,
+    columns="Genus",
+    index="id",
+    values="count",
+    fill_value=0,
+    aggfunc="sum",
+)
 mat = rarefy_counts(mat, 1000)
 
 log.info("Calculating beta diversity and PCoA.")

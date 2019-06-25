@@ -2,9 +2,10 @@
 
 import pickle
 import pandas as pd
+from os import path
 
 
-def find_closest(bacteroidetes, firmicutes, samples, n=1):
+def find_closest(bacteroidetes, firmicutes, samples, n=5):
     """Find the id of the members closest to the input.
 
     Parameters
@@ -26,15 +27,44 @@ def find_closest(bacteroidetes, firmicutes, samples, n=1):
     return None
 
 
+def describe(samples, metadata):
+    """Give representative information for set of samples.
+
+    Parameters
+    ==========
+    samples : pandas.Series
+        The samples to describe.
+    metadata : pandas.DataFrame
+        The DataFrame containing additional information for all samples.
+
+    Returns
+    =======
+    dict
+        A dictionary containing different characteristics of the samples.
+        For instance:
+        - "dogs": How many of the individuals have a dog?
+        - "ibd": How many of the individuals have IBD?
+
+    """
+    return None
+
+
 # We start by reading our genus level data
-genera = pd.read_csv("../data/american_gut_genus.csv", dtype={"id": str})
+genera = pd.read_csv(
+    path.join("..", "data", "american_gut_genus.csv"), dtype={"id": str}
+)
 
 # Here we calculate the "library size", the total sum of counts/reads for
 # each sample
 libsize = genera.groupby("id")["count"].sum()
 
 # This is just the metadata
-meta = pd.read_csv("../data/metadata.tsv", dtype={"id": str}, sep="\t")
+meta = pd.read_csv(
+    path.join("..", "data", "metadata.tsv"),
+    dtype={"id": str},
+    sep="\t",
+    index_col=0,
+)
 
 # Now we want to summarize the data on the phylum level and convert counts
 # to percentages. We start by summarizing on the phylum level
@@ -44,8 +74,9 @@ phyla = genera.groupby(["id", "Phylum"])["count"].sum().reset_index()
 phyla["relative"] = phyla["count"].values / libsize[phyla.id].values
 
 # We will only keep the fractions for the two phyla we're interested in
-phyla = pd.pivot_table(phyla, index="id", columns="Phylum", values="relative",
-                       fill_value=0)[["Bacteroidetes", "Firmicutes"]]
+phyla = pd.pivot_table(
+    phyla, index="id", columns="Phylum", values="relative", fill_value=0
+)[["Bacteroidetes", "Firmicutes"]]
 
 # As a last step we will load the PCoA coordinates generated in
 # `beta_diversity.py`, select 1000 random individuals and merge the
