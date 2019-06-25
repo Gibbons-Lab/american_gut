@@ -81,10 +81,9 @@ phyla = pd.pivot_table(
 # As a last step we will load the PCoA coordinates generated in
 # `beta_diversity.py`, select 1000 random individuals and merge the
 # coordinates with the phyla abundances
-with open("pcoa.pickle", "rb") as pfile:
-    red = pickle.load(pfile)
+red = pd.read_csv("pcoa.csv", index_col=0)
 
-samples = red.samples.sample(1000)
+samples = red.sample(1000)
 samples = pd.merge(samples, phyla, left_index=True, right_index=True)
 
 # The App will now use the samples DataFrame

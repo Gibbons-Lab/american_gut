@@ -64,6 +64,5 @@ log.info("Calculating beta diversity and PCoA.")
 D = beta_diversity("braycurtis", mat.values, mat.index, validate=True)
 red = pcoa(D, number_of_dimensions=2)
 
-log.info("Saving results to `pcoa.pickle`.")
-with open("pcoa.pickle", "bw") as pfile:
-    pickle.dump(red, pfile)
+log.info("Saving results to `pcoa.csv`.")
+red.samples.to_csv("pcoa.csv")
