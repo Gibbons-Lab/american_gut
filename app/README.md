@@ -3,6 +3,8 @@
 This little app will allow you to find similar individuals in the American
 Gut dataset based on your proportion of Bacteroidetes and Firmicutes.
 
+<img src="demo.gif" style="max-width: 640px" width="90%">
+
 ## Installation
 
 The App uses [dash](https://plot.ly/products/dash/). You can install all
