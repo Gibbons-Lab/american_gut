@@ -1,6 +1,5 @@
 """Stuff to run on app startup."""
 
-import pickle
 import pandas as pd
 from os import path
 
