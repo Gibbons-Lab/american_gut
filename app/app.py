@@ -83,7 +83,7 @@ def info_field(icon, text, color):
                 style={
                     "font": "24px Lato",
                     "vertical-align": "middle",
-                    "color": "#aaa",
+                    "color": "#666",
                 },
             ),
         ]
@@ -102,7 +102,7 @@ app.layout = html.Div(
     style={
         "max-width": "1000px",
         "margin": 0,
-        "font-family": "Lato, sans-serif",
+        "font": "16px Lato, sans-serif",
     },
     children=[
         html.H1(
@@ -111,10 +111,19 @@ app.layout = html.Div(
         ),
         html.Div(
             children=[
-                html.P("Find close participants in the American Gut project."),
                 html.P(
-                    "What is the percentage of Bacteroides and Firmicutes you"
-                    " want to query?"
+                    "Find who your gut is most similar to from the American Gut Project. Use the sliders to input your Bacteroidetes and Firmicutes percentages."
+                ),
+                html.P("Legend:"),
+                html.P("Bluer points represent a higher ratio of Firmicutes."),
+                html.P(
+                    "Redder points represent a higher ratio of Bacteroidetes."
+                ),
+                html.P(
+                    "Pink points show the 5 closest individuals to your distribution."
+                ),
+                html.P(
+                    "Size of the points is based on overall percentages of Firmicutes and Bacteroidetes in relation to overall gut bacteria."
                 ),
             ],
             style={
@@ -124,6 +133,7 @@ app.layout = html.Div(
                 "margin": "1em",
                 "padding": "0.25em 1em",
                 "max-width": "90%",
+                "color": "#666",
             },
         ),
         html.Br(),
@@ -139,7 +149,7 @@ app.layout = html.Div(
                     color="red",
                     handleLabel={
                         "showCurrentValue": True,
-                        "label": "Bacteroidetes",
+                        "label": "%Bacteroidetes",
                     },
                 ),
                 daq.Slider(
@@ -152,7 +162,7 @@ app.layout = html.Div(
                     color="blue",
                     handleLabel={
                         "showCurrentValue": True,
-                        "label": "Firmicutes",
+                        "label": "%Firmicutes",
                     },
                 ),
             ],
