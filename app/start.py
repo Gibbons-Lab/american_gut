@@ -53,17 +53,22 @@ def describe(samples, metadata):
     sample_metadata = pd.DataFrame()
     metadata.index = metadata["sample_name"]  
     sample_metadata = metadata.loc[samples.index]                                                                                       
-    samples_with_dog = "individuals with dogs: " + str(sample_metadata[sample_metadata.dog == "true"].shape[0])
-    samples_with_ibd = "individuals with IBD: " + str(sample_metadata[sample_metadata.ibd == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0])   
+    samples_with_dog = "Percentage of sample with dogs: " + str(((sample_metadata[sample_metadata.dog == "true"].shape[0])/1000)*100)
+    samples_with_ibd = "Percentage of sample with IBD: " + str((((sample_metadata[sample_metadata.ibd == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]))/1000)*100)   
+    samples_with_diabetes = "Percentage of sample with diabetes: " + str((((sample_metadata[sample_metadata.diabetes == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]))/1000)*100) 
+    samples_with_cancer = "Percentage of sample with cancer: " + str((((sample_metadata[sample_metadata.cancer == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]))/1000)*100) 
+    samples_with_college = "Percentage of sample with a college degree: " + str((((sample_metadata[sample_metadata.level_of_education == "Bachelor's degree"].shape[0]))/1000)*100) 
     sample_metadata.fillna(0)
     sample_metadata.birth_year = sample_metadata.birth_year.replace({'Not applicable': 0})
     sample_metadata.birth_year = sample_metadata.birth_year.replace({'Not provided': 0})
-    samples_older_70 = "individuals older than 70: " + str(sample_metadata[(sample_metadata.birth_year.astype(float) < 1949) & (sample_metadata.birth_year.astype(float) > 1919)].shape[0])  
+    samples_older_70 = "Percentage of sample over 70: " + str((((sample_metadata[(sample_metadata.birth_year.astype(float) < 1949) & (sample_metadata.birth_year.astype(float) > 1919)].shape[0]))/1000)*100)  
     sample_metadata.birth_year = sample_metadata.birth_year.replace({0: np.NaN})
-    age_average = "Average age of sample: " + str(((2019) - (sample_metadata.birth_year.mean().astype(float))))
+    sample_metadata.birth_year = sample_metadata.birth_year.astype(float)
+    age_average = (2019 - sample_metadata.birth_year.mean())
+    age_average_return = "Average age of sample: " + str(age_average)
     
-    dict = [samples_with_dog, samples_with_ibd, samples_older_70, age_average] 
-    return sample_metadata.birth_year.mean()
+    dict = [samples_with_dog, samples_with_ibd, samples_with_diabetes, samples_with_cancer, samples_with_college, samples_older_70, age_average_return] 
+    return dict 
 
 def healthiest(samples, metadata):
     """
