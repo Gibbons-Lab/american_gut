@@ -1,12 +1,13 @@
 """Stuff to run on app startup."""
 
+import pickle
+import numpy as np
 import pandas as pd
 from os import path
 
 
 def find_closest(bacteroidetes, firmicutes, samples, n=5):
     """Find the id of the members closest to the input.
-
     Parameters
     ==========
     bacteroidetes : float in [0, 1]
@@ -16,26 +17,31 @@ def find_closest(bacteroidetes, firmicutes, samples, n=5):
     samples : pandas.DataFrame
         The sample data frame. Must contain column `Bacteroidetes` and
         `Firmicutes` that contain the percentage of those phyla.
-
     Returns
     =======
     list of str
         The id of the n closest individuals.
-
     """
-    return None
+    distance = list()
+    for index,row in samples.iterrows():
+        distance.append(np.sqrt((np.square(row['Bacteroidetes']-bacteroidetes))+ (np.square(row['Firmicutes']-firmicutes))))
+    samples['Distance'] = distance
+    samples = samples.sort_values(by = 'Distance')
+    id = samples.index
+    sorted_id = id.tolist()
+    top_5 = sorted_id[0:5]
+    
+    return top_5
 
 
 def describe(samples, metadata):
     """Give representative information for set of samples.
-
     Parameters
     ==========
     samples : pandas.Series
         The samples to describe.
     metadata : pandas.DataFrame
-        The DataFrame containing additional information for all samples.
-
+        The DataFrame containing additional information for all samples. 
     Returns
     =======
     dict
@@ -43,17 +49,73 @@ def describe(samples, metadata):
         For instance:
         - "dogs": How many of the individuals have a dog?
         - "ibd": How many of the individuals have IBD?
-
     """
-    return None
+    sample_metadata = pd.DataFrame()
+    metadata.index = metadata["sample_name"]  
+    sample_metadata = metadata.loc[samples.index]                                                                                       
+    samples_with_dog = "individuals with dogs: " + str(sample_metadata[sample_metadata.dog == "true"].shape[0])
+    samples_with_ibd = "individuals with IBD: " + str(sample_metadata[sample_metadata.ibd == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0])   
+    sample_metadata.fillna(0)
+    sample_metadata.birth_year = sample_metadata.birth_year.replace({'Not applicable': 0})
+    sample_metadata.birth_year = sample_metadata.birth_year.replace({'Not provided': 0})
+    samples_older_70 = "individuals older than 70: " + str(sample_metadata[(sample_metadata.birth_year.astype(float) < 1949) & (sample_metadata.birth_year.astype(float) > 1919)].shape[0])  
+    sample_metadata.birth_year = sample_metadata.birth_year.replace({0: np.NaN})
+    age_average = "Average age of sample: " + str(((2019) - (sample_metadata.birth_year.mean().astype(float))))
+    
+    dict = [samples_with_dog, samples_with_ibd, samples_older_70, age_average] 
+    return sample_metadata.birth_year.mean()
 
+def healthiest(samples, metadata):
+    """
+     Return the average firmicutes and bacteroidites levels for the healthiest individuals in the metadata and standard deviation
+     Parameters
+     ==========
+     samples : pandas.DataFrame
+         The sample data frame. Must contain column `Bacteroidetes` and
+         `Firmicutes` that contain the percentage of those phyla. 
+     metadata : pandas.DataFrame
+        The DataFrame containing additional information for all samples, 
+        Uses birth_year, alcohol frequency, alzheimer's, bmi,   cardiovascular_disease, cancer, depression_bipolar_schizophrenia, diabetes,
+        ibd, ibs, kidney_disease, liver_disease, lung_disease, mental_illness, skin_condition
+     Returns
+     =======
+     list of two numbers 
+         The bacteroidites and firmicutes ratios for the compiled healthiest individuals 
+   """
+    sample_metadata = pd.DataFrame()
+    metadata.index = metadata["sample_name"]  
+    sample_metadata = metadata.loc[samples.index]  
+    metadata_copy = sample_metadata.copy(deep=True)
+    metadata_copy = metadata_copy[metadata_copy.cancer == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.alzheimers == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.cardiovascular_disease == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.diabetes == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.ibd == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.ibs == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.kidney_disease == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.liver_disease == "I do not have this condition" ]
+    metadata_copy = metadata_copy[metadata_copy.lung_disease == "I do not have this condition"]
+    metadata_copy = metadata_copy[metadata_copy.mental_illness == "false"]
+    metadata_copy = metadata_copy[metadata_copy.skin_condition == "I do not have this condition"]
+    metadata_copy.bmi = metadata_copy.bmi.replace({'Not applicable': 0})
+    metadata_copy.bmi = metadata_copy.bmi.replace({'Not provided': 0})
+    metadata_copy = metadata_copy[metadata_copy.bmi.astype(float) > 18.5]
+    metadata_copy = metadata_copy[metadata_copy.bmi.astype(float) < 25.0]
+    metadata_copy.birth_year = metadata_copy.birth_year.replace({'Not applicable': 0})
+    metadata_copy.birth_year = metadata_copy.birth_year.replace({'Not provided': 0})
+    metadata_copy = metadata_copy[metadata_copy.birth_year.astype(float) > 1959]
+    metadata_copy = metadata_copy[metadata_copy.birth_year.astype(float) < 1999]
+    id_list = metadata_copy["sample_name"].tolist()
+
+
+    return id_list 
 
 # We start by reading our genus level data
 genera = pd.read_csv(
     path.join("..", "data", "american_gut_genus.csv"), dtype={"id": str}
 )
 
-# Here we calculate the "library size", the total sum of counts/reads for
+# Here we calculate the "library size", the total sum of counts/reads for      
 # each sample
 libsize = genera.groupby("id")["count"].sum()
 
