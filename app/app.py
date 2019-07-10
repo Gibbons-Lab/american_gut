@@ -66,10 +66,35 @@ def beta_figure(close, size=16):
     }
 
 
+def info_field(icon, text, color):
+    """Draw an info field."""
+    return html.Div(
+        [
+            html.I(
+                className="fas fa-%s fa-2x" % icon,
+                style={
+                    "vertical-align": "middle",
+                    "padding": "0 8px",
+                    "color": color,
+                },
+            ),
+            html.Span(
+                text,
+                style={
+                    "font": "24px Lato",
+                    "vertical-align": "middle",
+                    "color": "#aaa",
+                },
+            ),
+        ]
+    )
+
+
 app = dash.Dash(
     __name__,
     external_stylesheets=[
-        "https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap"
+        "https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap",
+        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css",
     ],
 )
 
@@ -156,7 +181,35 @@ app.layout = html.Div(
                     },
                 ),
             ],
-            style={"margin": "0 5vw"},
+            style={"margin": "0 5vw", "margin-bottom": "2em"},
+        ),
+        html.Br(),
+        html.H2(
+            style={"color": "#3F51B5", "font-weight": "300"},
+            children="Meet your microbial neighbours...",
+        ),
+        html.P(
+            [
+                html.P(
+                    "The 5 persons that are the closest to you in the Bacteroidetes "
+                    "and Firmicutes percentages are on average 42.2 years old and"
+                    "have a BMI of 26."
+                ),
+                html.P("And here some more info:"),
+            ],
+            style={"font": "16px Lato", "color": "#777", "margin": "0 5vw"},
+        ),
+        html.Div(
+            [
+                info_field("dog", "5 of 5", "#3F51B5"),
+                info_field("ambulance", "2 of 5", "#E91E63"),
+            ],
+            style={
+                "display": "flex",
+                "justify-content": "space-around",
+                "flex-wrap": "wrap",
+                "margin": "1em 5vw",
+            },
         ),
     ],
 )
