@@ -61,6 +61,7 @@ def describe(samples, metadata):
     metadata.index = metadata["sample_name"]
     sample_metadata = metadata.loc[samples.index]
     samples_with_dog = sample_metadata[sample_metadata.dog == "true"].shape[0]
+    samples_with_cat = sample_metadata[sample_metadata.cat == "true"].shape[0]
     samples_with_ibd = sample_metadata[
         sample_metadata.ibd
         == "Diagnosed by a medical professional (doctor, physician assistant)"
@@ -130,6 +131,10 @@ def describe(samples, metadata):
     return_display = pd.DataFrame(columns=["names", "values", "icon"])
     return_display = return_display.append(
         {"names": "Dogs", "values": samples_with_dog, "icon": "dog"},
+        ignore_index=True,
+    )
+    return_display = return_display.append(
+        {"names": "Cats", "values": samples_with_cat, "icon": "cat"},
         ignore_index=True,
     )
     return_display = return_display.append(
