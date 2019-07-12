@@ -50,25 +50,49 @@ def describe(samples, metadata):
         - "dogs": How many of the individuals have a dog?
         - "ibd": How many of the individuals have IBD?
     """
+    import pandas as pd
     sample_metadata = pd.DataFrame()
     metadata.index = metadata["sample_name"]  
     sample_metadata = metadata.loc[samples.index]                                                                                       
-    samples_with_dog = "Percentage of sample with dogs: " + str(((sample_metadata[sample_metadata.dog == "true"].shape[0])/1000)*100)
-    samples_with_ibd = "Percentage of sample with IBD: " + str((((sample_metadata[sample_metadata.ibd == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]))/1000)*100)   
-    samples_with_diabetes = "Percentage of sample with diabetes: " + str((((sample_metadata[sample_metadata.diabetes == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]))/1000)*100) 
-    samples_with_cancer = "Percentage of sample with cancer: " + str((((sample_metadata[sample_metadata.cancer == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]))/1000)*100) 
-    samples_with_college = "Percentage of sample with a college degree: " + str((((sample_metadata[sample_metadata.level_of_education == "Bachelor's degree"].shape[0]))/1000)*100) 
+    samples_with_dog = (sample_metadata[sample_metadata.dog == "true"].shape[0])
+    samples_with_ibd = (sample_metadata[sample_metadata.ibd == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]) 
+    samples_with_diabetes = sample_metadata[sample_metadata.diabetes == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]
+    samples_with_cancer = sample_metadata[sample_metadata.cancer == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]
+    samples_with_college = (sample_metadata[sample_metadata.level_of_education == "Bachelor's degree"].shape[0])
     sample_metadata.fillna(0)
     sample_metadata.birth_year = sample_metadata.birth_year.replace({'Not applicable': 0})
     sample_metadata.birth_year = sample_metadata.birth_year.replace({'Not provided': 0})
-    samples_older_70 = "Percentage of sample over 70: " + str((((sample_metadata[(sample_metadata.birth_year.astype(float) < 1949) & (sample_metadata.birth_year.astype(float) > 1919)].shape[0]))/1000)*100)  
+    samples_older_70 = (sample_metadata[(sample_metadata.birth_year.astype(float) < 1949) & (sample_metadata.birth_year.astype(float) > 1919)].shape[0])
     sample_metadata.birth_year = sample_metadata.birth_year.replace({0: np.NaN})
     sample_metadata.birth_year = sample_metadata.birth_year.astype(float)
     age_average = (2019 - sample_metadata.birth_year.mean())
-    age_average_return = "Average age of sample: " + str(age_average)
+    sample_metadata.bmi = sample_metadata.bmi.replace({'Not applicable': np.NaN})
+    sample_metadata.bmi = sample_metadata.bmi.replace({'Not provided': np.NaN})
+    sample_metadata.bmi = sample_metadata.bmi.replace({0: np.NaN})
+    sample_metadata.bmi = sample_metadata.bmi.astype(float)
+    sample_metadata.bmi.loc[(sample_metadata['bmi'] > 40)] = np.NaN
+    sample_metadata.bmi.loc[(sample_metadata['bmi'] < 13)] = np.NaN
+    bmi_average = sample_metadata.bmi.mean()
     
-    dict = [samples_with_dog, samples_with_ibd, samples_with_diabetes, samples_with_cancer, samples_with_college, samples_older_70, age_average_return] 
-    return dict 
+    sample_metadata.height_cm = sample_metadata.height_cm.replace({'Not applicable': np.NaN})
+    sample_metadata.height_cm = sample_metadata.height_cm.replace({'Not provided': np.NaN})
+    sample_metadata.height_cm = sample_metadata.height_cm.replace({0: np.NaN})
+    sample_metadata.height_cm = sample_metadata.height_cm.astype(float)
+    sample_metadata.height_cm.loc[(sample_metadata['height_cm'] > 220)] = np.NaN
+    sample_metadata.height_cm.loc[(sample_metadata['height_cm'] < 130)] = np.NaN
+    height_average = sample_metadata.height_cm.mean()
+    
+    dict = [samples_with_dog, samples_with_ibd, samples_with_diabetes, samples_with_cancer, samples_with_college, samples_older_70, age_average] 
+    return_display = pd.DataFrame(columns = ['names', 'values', 'icon'] ) 
+    return_display = return_display.append({'names' : 'Dogs', 'values':samples_with_dog, 'icon': 'dog'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'Cancer', 'values':samples_with_cancer, 'icon': 'ribbon'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'Diabetes', 'values':samples_with_diabetes, 'icon': 'circle'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'IBD', 'values':samples_with_ibd, 'icon': 'ambulence'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'College degree', 'values':samples_with_college, 'icon': 'graduation-cap'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'Average age', 'values':age_average, 'icon': 'child'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'Average BMI', 'values':bmi_average, 'icon': 'weight'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'Average height (cm)', 'values':height_average, 'icon': 'ruler-vertical'}, ignore_index = True)
+    return return_display 
 
 def healthiest(samples, metadata):
     """
@@ -111,7 +135,6 @@ def healthiest(samples, metadata):
     metadata_copy = metadata_copy[metadata_copy.birth_year.astype(float) > 1959]
     metadata_copy = metadata_copy[metadata_copy.birth_year.astype(float) < 1999]
     id_list = metadata_copy["sample_name"].tolist()
-
 
     return id_list 
 
