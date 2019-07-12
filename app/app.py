@@ -6,17 +6,19 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
-from start import samples, find_closest, healthiest_sample
+from start import samples, find_closest, healthiest_sample, meta, describe
 
 
 close = pd.Series(0, index=samples.index)
+meta = meta[meta.sample_name.isin(samples.index)]
+colors = pd.Series(["#3F51B5", "#E91E63", "#009688"])
 
 
 def beta_figure(close, size=16):
     """Generate the beta diversity figure."""
     s = samples[close == 0]
     ns = samples[close == 1]
-   
+
     return {
         "data": [
             go.Scattergl(
@@ -44,21 +46,23 @@ def beta_figure(close, size=16):
                 x=[healthiest_sample.PC1],
                 y=[healthiest_sample.PC2],
                 showlegend=False,
-                text= [
+                text=[
                     "Bacteroidetes: %.1f%%<br />Firmicutes: %.1f%%"
-                    % (healthiest_sample["Bacteroidetes"] * 100, healthiest_sample["Firmicutes"] * 100)
-                ]    
-                ,
+                    % (
+                        healthiest_sample["Bacteroidetes"] * 100,
+                        healthiest_sample["Firmicutes"] * 100,
+                    )
+                ],
                 mode="markers",
                 marker={
                     "color": "#ab7be3",
                     "showscale": False,
-                    "size":1.1 * size,
+                    "size": 1.1 * size,
                     "line": {"width": size / 3, "color": "#42056e"},
                     "opacity": 1.0,
                 },
             ),
-         go.Scattergl(
+            go.Scattergl(
                 name="",
                 x=ns.PC1,
                 y=ns.PC2,
@@ -76,7 +80,7 @@ def beta_figure(close, size=16):
                     "line": {"width": size / 3, "color": "#C51162"},
                     "opacity": 1.0,
                 },
-            )
+            ),
         ],
         "layout": go.Layout(
             title="Bray-Curtis PCoA",
@@ -86,27 +90,52 @@ def beta_figure(close, size=16):
     }
 
 
-def info_field(icon, text, color):
+def info_fields(description):
     """Draw an info field."""
-    return html.Div(
-        [
-            html.I(
-                className="fas fa-%s fa-2x" % icon,
-                style={
-                    "vertical-align": "middle",
-                    "padding": "0 8px",
-                    "color": color,
-                },
-            ),
-            html.Span(
-                text,
-                style={
-                    "font": "24px Lato",
-                    "vertical-align": "middle",
-                    "color": "#666",
-                },
-            ),
-        ]
+    if description.shape[0] == 0:
+        return None
+    description = description[~description.names.str.contains("Average")]
+    description["color"] = colors[
+        [i % len(colors) for i in range(description.shape[0])]
+    ].values
+    fields = [
+        html.Div(
+            [
+                html.I(
+                    className="fas fa-%s fa-2x" % row.icon,
+                    style={
+                        "vertical-align": "middle",
+                        "padding": "0 8px",
+                        "color": row["color"],
+                    },
+                ),
+                html.Span(
+                    "%d of %d" % (row["values"], sum(close == 1)),
+                    style={
+                        "font": "24px Lato",
+                        "vertical-align": "middle",
+                        "color": "#666",
+                    },
+                ),
+            ],
+            title=row["names"],
+            style={"margin": "0.5em 2em"},
+        )
+        for _, row in description.iterrows()
+    ]
+    return fields
+
+
+def info_text(description):
+    return (
+        "The 5 persons that are the closest to you in the Bacteroidetes "
+        "and Firmicutes percentages are on average %.1f years old, "
+        "have a BMI of %.1f and are %.1f cm tall."
+        % (
+            description[description.names == "Average age"]["values"],
+            description[description.names == "Average BMI"]["values"],
+            description[description.names == "Average height (cm)"]["values"],
+        )
     )
 
 
@@ -148,8 +177,6 @@ app.layout = html.Div(
                 html.P(
                     "Size of the points is based on overall percentages of Firmicutes and Bacteroidetes in relation to overall gut bacteria."
                 ),
-                
-                
             ],
             style={
                 "box-shadow": "1px 1px 3px #aaa",
@@ -228,23 +255,22 @@ app.layout = html.Div(
                 html.P(
                     "The 5 persons that are the closest to you in the Bacteroidetes "
                     "and Firmicutes percentages are on average 42.2 years old and"
-                    "have a BMI of 26."
+                    "have a BMI of 26.",
+                    id="info_text",
                 ),
                 html.P("And here some more info:"),
             ],
             style={"font": "16px Lato", "color": "#777", "margin": "0 5vw"},
         ),
         html.Div(
-            [
-                info_field("dog", "5 of 5", "#3F51B5"),
-                info_field("ambulance", "2 of 5", "#E91E63"),
-            ],
+            None,
             style={
                 "display": "flex",
-                "justify-content": "space-around",
+                "justify-content": "start",
                 "flex-wrap": "wrap",
                 "margin": "1em 5vw",
             },
+            id="info",
         ),
     ],
 )
@@ -271,7 +297,11 @@ def update_bac(firm, bac):
 
 
 @app.callback(
-    dash.dependencies.Output("phyla_graph", "figure"),
+    [
+        dash.dependencies.Output("phyla_graph", "figure"),
+        dash.dependencies.Output("info", "children"),
+        dash.dependencies.Output("info_text", "children"),
+    ],
     [
         dash.dependencies.Input("firm_slider", "value"),
         dash.dependencies.Input("bac_slider", "value"),
@@ -284,7 +314,12 @@ def update_figure(firm, bac, s):
     close[:] = 0
     if best is not None:
         close[best] = 1
-    return beta_figure(close, s)
+    description = describe(samples[close == 1], meta)
+    return (
+        beta_figure(close, s),
+        info_fields(description),
+        info_text(description),
+    )
 
 
 if __name__ == "__main__":
