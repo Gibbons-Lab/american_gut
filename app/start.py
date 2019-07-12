@@ -55,6 +55,7 @@ def describe(samples, metadata):
     metadata.index = metadata["sample_name"]  
     sample_metadata = metadata.loc[samples.index]                                                                                       
     samples_with_dog = (sample_metadata[sample_metadata.dog == "true"].shape[0])
+    samples_with_cat = (sample_metadata[sample_metadata.cat == "true"].shape[0])
     samples_with_ibd = (sample_metadata[sample_metadata.ibd == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]) 
     samples_with_diabetes = sample_metadata[sample_metadata.diabetes == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]
     samples_with_cancer = sample_metadata[sample_metadata.cancer == "Diagnosed by a medical professional (doctor, physician assistant)"].shape[0]
@@ -85,6 +86,7 @@ def describe(samples, metadata):
     dict = [samples_with_dog, samples_with_ibd, samples_with_diabetes, samples_with_cancer, samples_with_college, samples_older_70, age_average] 
     return_display = pd.DataFrame(columns = ['names', 'values', 'icon'] ) 
     return_display = return_display.append({'names' : 'Dogs', 'values':samples_with_dog, 'icon': 'dog'}, ignore_index = True)
+    return_display = return_display.append({'names' : 'Cats', 'values':samples_with_cat, 'icon': 'cat'}, ignore_index = True)
     return_display = return_display.append({'names' : 'Cancer', 'values':samples_with_cancer, 'icon': 'ribbon'}, ignore_index = True)
     return_display = return_display.append({'names' : 'Diabetes', 'values':samples_with_diabetes, 'icon': 'circle'}, ignore_index = True)
     return_display = return_display.append({'names' : 'IBD', 'values':samples_with_ibd, 'icon': 'ambulence'}, ignore_index = True)
@@ -137,7 +139,8 @@ def healthiest(samples, metadata):
     id_list = metadata_copy["sample_name"].tolist()
     healthiest_samples = samples.loc[id_list]
     healthiest_sample = healthiest_samples.mean(axis = 0)
-    return healthiest_sample 
+    return healthiest_sample
+
 
 # We start by reading our genus level data
 genera = pd.read_csv(
