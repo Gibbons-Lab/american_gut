@@ -6,7 +6,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
-from start import samples, find_closest
+from start import samples, find_closest, healthiest_sample
 
 
 close = pd.Series(0, index=samples.index)
@@ -16,6 +16,7 @@ def beta_figure(close, size=16):
     """Generate the beta diversity figure."""
     s = samples[close == 0]
     ns = samples[close == 1]
+   
     return {
         "data": [
             go.Scattergl(
@@ -40,6 +41,25 @@ def beta_figure(close, size=16):
             ),
             go.Scattergl(
                 name="",
+                x=[healthiest_sample.PC1],
+                y=[healthiest_sample.PC2],
+                showlegend=False,
+                text= [
+                    "Bacteroidetes: %.1f%%<br />Firmicutes: %.1f%%"
+                    % (healthiest_sample["Bacteroidetes"] * 100, healthiest_sample["Firmicutes"] * 100)
+                ]    
+                ,
+                mode="markers",
+                marker={
+                    "color": "#ab7be3",
+                    "showscale": False,
+                    "size":1.1 * size,
+                    "line": {"width": size / 3, "color": "#42056e"},
+                    "opacity": 1.0,
+                },
+            ),
+         go.Scattergl(
+                name="",
                 x=ns.PC1,
                 y=ns.PC2,
                 showlegend=False,
@@ -56,7 +76,7 @@ def beta_figure(close, size=16):
                     "line": {"width": size / 3, "color": "#C51162"},
                     "opacity": 1.0,
                 },
-            ),
+            )
         ],
         "layout": go.Layout(
             title="Bray-Curtis PCoA",
@@ -123,8 +143,13 @@ app.layout = html.Div(
                     "Pink points show the 5 closest individuals to your distribution."
                 ),
                 html.P(
+                    "The purple point represents the ideal distribution for a healthy individual."
+                ),
+                html.P(
                     "Size of the points is based on overall percentages of Firmicutes and Bacteroidetes in relation to overall gut bacteria."
                 ),
+                
+                
             ],
             style={
                 "box-shadow": "1px 1px 3px #aaa",

@@ -135,8 +135,9 @@ def healthiest(samples, metadata):
     metadata_copy = metadata_copy[metadata_copy.birth_year.astype(float) > 1959]
     metadata_copy = metadata_copy[metadata_copy.birth_year.astype(float) < 1999]
     id_list = metadata_copy["sample_name"].tolist()
-
-    return id_list 
+    healthiest_samples = samples.loc[id_list]
+    healthiest_sample = healthiest_samples.mean(axis = 0)
+    return healthiest_sample 
 
 # We start by reading our genus level data
 genera = pd.read_csv(
@@ -152,7 +153,6 @@ meta = pd.read_csv(
     path.join("..", "data", "metadata.tsv"),
     dtype={"id": str},
     sep="\t",
-    index_col=0,
 )
 
 # Now we want to summarize the data on the phylum level and convert counts
@@ -174,5 +174,6 @@ red = pd.read_csv("pcoa.csv", index_col=0)
 
 samples = red.sample(1000)
 samples = pd.merge(samples, phyla, left_index=True, right_index=True)
+healthiest_sample = healthiest(samples, meta)
 
 # The App will now use the samples DataFrame
