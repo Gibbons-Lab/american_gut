@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from os import path
+import plotly.figure_factory as ff
 
 
 def find_closest(bacteroidetes, firmicutes, samples, n=5):
@@ -70,12 +71,30 @@ def describe(samples, metadata):
         sample_metadata.diabetes
         == "Diagnosed by a medical professional (doctor, physician assistant)"
     ].shape[0]
+    samples_with_cardio = sample_metadata[
+        sample_metadata.cardiovascular_disease
+        == "Diagnosed by a medical professional (doctor, physician assistant)"
+    ].shape[0]
     samples_with_cancer = sample_metadata[
         sample_metadata.cancer
         == "Diagnosed by a medical professional (doctor, physician assistant)"
     ].shape[0]
+    samples_female = sample_metadata[
+        sample_metadata.sex
+        == "female"
+    ].shape[0]
+    samples_consume_alcohol = sample_metadata[
+        sample_metadata.alcohol_consumption
+        == "true"
+    ].shape[0]
     samples_with_college = sample_metadata[
         sample_metadata.level_of_education == "Bachelor's degree"
+    ].shape[0]
+    samples_who_smoke = sample_metadata[
+        (sample_metadata.smoking_frequency == "Rarely (a few times/month)")
+        & (sample_metadata.smoking_frequency == "Daily")
+        & (sample_metadata.smoking_frequency == "Occasionally (1-2 times/week)")
+        & (sample_metadata.smoking_frequency == "Regularly (3-5 times/week)")
     ].shape[0]
     sample_metadata.fillna(0)
     sample_metadata.birth_year = sample_metadata.birth_year.replace(
@@ -175,11 +194,53 @@ def describe(samples, metadata):
             "values": height_average,
             "icon": "ruler-vertical",
         },
+        ignore_index = True,
+    )
+    return_display = return_display.append(
+        {
+            "names": "Alcohol Consumption",
+            "values": samples_consume_alcohol,
+            "icon": "beer",
+        },
+    
+        ignore_index=True,
+    )
+    return_display = return_display.append(
+        {
+            "names": "Cardiovascular disease",
+            "values": samples_with_cardio,
+            "icon": "heartbeat",
+        },
+    
+        ignore_index=True,
+    )
+    return_display = return_display.append(
+        {
+            "names": "Females",
+            "values": samples_female,
+            "icon": "female",
+        },
+    
+        ignore_index=True,
+    )
+    return_display = return_display.append(
+        {
+            "names": "Smokers",
+            "values": samples_who_smoke,
+            "icon": "smoking",
+        },
+    
         ignore_index=True,
     )
     return return_display
-
-
+"""
+def distribution(samples):
+    import plotly.figure_factory as ff
+     hist_data = [samples["Firmicutes"], samples["Bacteroidetes"]]
+     group_labels = ['Firm', 'Bact']
+     fig = ff.create_distplot(hist_data, group_labels, bin_size=.2)
+     return fig
+     """
 def healthiest(samples, metadata):
     """
      Return the average firmicutes and bacteroidites levels for the healthiest individuals in the metadata and standard deviation
