@@ -5,6 +5,8 @@ import dash_daq as daq
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
+import plotly.figure_factory as ff
+import numpy as np
 import pandas as pd
 from start import samples, find_closest, healthiest_sample, meta, describe
 
@@ -81,6 +83,25 @@ def beta_figure(close, size=16):
                     "opacity": 1.0,
                 },
             ),
+           go.Scattergl(
+                name="",
+                x=[ns.PC1.mean()],
+                y=[ns.PC2.mean()],
+                showlegend=False,
+                text=[
+                    "Bacteroidetes: %.1f%%<br />Firmicutes: %.1f%%"
+                    % (r["Bacteroidetes"] * 100, r["Firmicutes"] * 100)
+                    for _, r in ns.iterrows()
+                ],
+                mode="markers",
+                marker={
+                    "color": "#32e382",
+                    "showscale": False,
+                    "size": 1.1 * size,
+                    "line": {"width": size / 3, "color": "#07b556"},
+                    "opacity": 1.0,
+                },
+            )
         ],
         "layout": go.Layout(
             title="Bray-Curtis PCoA",
@@ -161,9 +182,15 @@ app.layout = html.Div(
         html.Div(
             children=[
                 html.P(
-                    "Find who your gut is most similar to from the American Gut Project. Use the sliders to input your Bacteroidetes and Firmicutes percentages."
+                    "Introduction:"
+                ),
+                html.P(
+                    "The human gut is comprised primarily of two bacterial phyla, Firmicutes and Bacteroidetes. The ratio of these two bacteria in the gut have strong correlations to the diet, exercise, and potential obesity of a person. Understanding their relationship has important implications to our health. Input your distributions to see where you fall on the Bray-Curtis plot of 1000 random individuals from the American Gut Project."
                 ),
                 html.P("Legend:"),
+                html.P(
+                    "The green point is you!"
+                ),
                 html.P("Bluer points represent a higher ratio of Firmicutes."),
                 html.P(
                     "Redder points represent a higher ratio of Bacteroidetes."
@@ -245,6 +272,8 @@ app.layout = html.Div(
             ],
             style={"margin": "0 5vw", "margin-bottom": "2em"},
         ),
+      
+
         html.Br(),
         html.H2(
             style={"color": "#3F51B5", "font-weight": "300"},
@@ -310,7 +339,7 @@ def update_bac(firm, bac):
 )
 def update_figure(firm, bac, s):
     """Update the beta diversity figure."""
-    best = find_closest(bac / 100, firm / 100, samples, n=5)
+    best = find_closest(bac / 100, firm / 100, samples, n=5) 
     close[:] = 0
     if best is not None:
         close[best] = 1
