@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 import plotly.figure_factory as ff
 import numpy as np
 import pandas as pd
-from start import samples, find_closest, healthiest_sample, meta, describe
+from start import samples, find_closest, healthiest_sample, meta, describe, bact_plot, firm_plot
 
 
 close = pd.Series(0, index=samples.index)
@@ -256,6 +256,7 @@ app.layout = html.Div(
             figure=beta_figure(close),
             style={"height": "70vh", "margin": 0, "padding": 0},
         ),
+        
         html.Div(
             [
                 "point size",
@@ -272,7 +273,19 @@ app.layout = html.Div(
             ],
             style={"margin": "0 5vw", "margin-bottom": "2em"},
         ),
-      
+              dcc.Graph(
+            id="firmicutes_plot",
+            figure=firm_plot(samples, .2, healthiest_sample),
+            style={"height": "70vh", "margin": 0, "padding": 0},
+                  
+        ),
+              dcc.Graph(
+            id="bacteroidetes_plot",
+            figure=bact_plot(samples, .4, healthiest_sample),
+            style={"height": "70vh", "margin": 0, "padding": 0},
+                  
+        ), 
+        
 
         html.Br(),
         html.H2(
@@ -330,16 +343,20 @@ def update_bac(firm, bac):
         dash.dependencies.Output("phyla_graph", "figure"),
         dash.dependencies.Output("info", "children"),
         dash.dependencies.Output("info_text", "children"),
+        dash.dependencies.Output("bacteroidetes_plot", "figure"),
+        dash.dependencies.Output("firmicutes_plot", "figure"),
+
     ],
     [
         dash.dependencies.Input("firm_slider", "value"),
         dash.dependencies.Input("bac_slider", "value"),
         dash.dependencies.Input("size_slider", "value"),
+        
     ],
 )
 def update_figure(firm, bac, s):
     """Update the beta diversity figure."""
-    best = find_closest(bac / 100, firm / 100, samples, n=5) 
+    best = find_closest(bac / 100, firm / 100, samples, n=5)
     close[:] = 0
     if best is not None:
         close[best] = 1
@@ -348,6 +365,9 @@ def update_figure(firm, bac, s):
         beta_figure(close, s),
         info_fields(description),
         info_text(description),
+        bact_plot(samples, bac/100, healthiest_sample),
+        firm_plot(samples, firm/100, healthiest_sample)
+
     )
 
 
