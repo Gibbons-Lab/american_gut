@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from os import path
 import plotly.figure_factory as ff
-
+import plotly.graph_objs as go
 
 def find_closest(bacteroidetes, firmicutes, samples, n=5):
     """Find the id of the members closest to the input.
@@ -233,14 +233,132 @@ def describe(samples, metadata):
         ignore_index=True,
     )
     return return_display
-"""
-def distribution(samples):
-    import plotly.figure_factory as ff
-     hist_data = [samples["Firmicutes"], samples["Bacteroidetes"]]
-     group_labels = ['Firm', 'Bact']
-     fig = ff.create_distplot(hist_data, group_labels, bin_size=.2)
-     return fig
-     """
+
+def firm_plot(samples, firmicutes, healthiest_sample):
+    """
+     Returns a graph of the distribution of the data in a graph
+     ==========
+     samples : pandas.DataFrame
+         The sample data frame. Must contain column `Bacteroidetes` and
+         `Firmicutes` that contain the percentage of those phyla.
+     Returns
+     =======
+     plotly graph
+   """
+    hist_data = [samples["Firmicutes"]]
+    group_labels = ['Firmicutes']
+    firm = ff.create_distplot(hist_data, group_labels, show_hist=False)
+    firm['layout'].update(title='Firmicutes Sample Distribution ')
+    firm['layout'].update(
+        showlegend=False,
+        annotations= [
+            dict(
+                x=firmicutes,
+                y=0,
+                xref="x",
+                yref="y",
+                text="You are here!",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+                arrowcolor="#0e0f36",
+                ax=70,
+                ay=-30,
+                bordercolor="#06a300",
+                borderwidth=2,
+                borderpad=4,
+                bgcolor="#69f564",
+                opacity=0.8
+            ), dict(
+                x=healthiest_sample['Firmicutes'],
+                y=0,
+                xref="x",
+                yref="y",
+                text="Healthiest sample",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+                arrowcolor="#0e0f36",
+                ax=70,
+                ay=30,
+                bordercolor="#4c0acf",
+                borderwidth=2,
+                borderpad=4,
+                bgcolor="#b977f2",
+                opacity=0.8
+            )
+        ]
+        
+    )
+
+    return firm
+
+    
+def bact_plot(samples, bacteroidetes, healthiest_sample):
+    """
+     Returns a graph of the distribution of the data in a graph
+     ==========
+     samples : pandas.DataFrame
+         The sample data frame. Must contain column `Bacteroidetes` and
+         `Firmicutes` that contain the percentage of those phyla.
+     Returns
+     =======
+     plotly graph
+   """
+    import plotly.figure_factory as ff 
+    hist_data = [samples["Bacteroidetes"]]
+    group_labels = ['Bacteroidetes']
+    bact = ff.create_distplot(hist_data, group_labels, show_hist=False)
+    bact['layout'].update(title='Bacteroidetes Sample Distribution ')
+
+    bact['layout'].update(
+        showlegend=False,
+        annotations= [
+            dict(
+                x=bacteroidetes,
+                y=0,
+                xref="x",
+                yref="y",
+                text="You are here!",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+                arrowcolor="#0e0f36",
+                ax=70,
+                ay=-30,
+                bordercolor="#06a300",
+                borderwidth=2,
+                borderpad=4,
+                bgcolor="#69f564",
+                opacity=0.8
+            ),
+            dict(
+                x=healthiest_sample['Bacteroidetes'],
+                y=0,
+                xref="x",
+                yref="y",
+                text="Healthiest Sample",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+                arrowcolor="#0e0f36",
+                ax=70,
+                ay=30,
+                bordercolor="#4c0acf",
+                borderwidth=2,
+                borderpad=4,
+                bgcolor="#b977f2",
+                opacity=0.8
+            )
+        ]
+        
+    )
+    return bact
+     
 def healthiest(samples, metadata):
     """
      Return the average firmicutes and bacteroidites levels for the healthiest individuals in the metadata and standard deviation
@@ -350,5 +468,6 @@ samples = red.sample(1000)
 meta = meta[meta.sample_name.isin(samples.index)]
 samples = pd.merge(samples, phyla, left_index=True, right_index=True)
 healthiest_sample = healthiest(samples, meta)
-
+firm_plot = firm_plot
+bact_plot = bact_plot
 # The App will now use the samples DataFrame
